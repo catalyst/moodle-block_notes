@@ -6,8 +6,8 @@
             <div class="resizer top-right"></div>
             <div class="resizer bottom-left"></div>
             <div class="resizer bottom-right"></div>
-            <div class="btn-crop s001">Crop</div>
-            <div class="btn-crop s002" onclick="require(['block_notes/notes'], function (M) { M.cancel();});">Cancel</div>
+            <div class="btn-crop s001" onclick="require(['block_notes/notes'], function (M) { M.makeScreenshot('.crop-tool');});">{{# str }} crop, block_notes {{/ str }}</div>
+            <div class="btn-crop s002" onclick="require(['block_notes/notes'], function (M) { M.cancel();});">{{# str }} cancel, block_notes {{/ str }}</div>
         </div>
     </div>
 </div>

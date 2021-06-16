@@ -11,30 +11,31 @@ define([], function() {
             document.getElementById('note_display_over_block').style.display = "block";
             document.getElementById('make_note_button').style.display = "none";
         },
-        makeScreenshot: function() {
+        makeScreenshot: function(crop_elem) {
             const screenshotTarget = document.body;
-            document.getElementById('note_display_over_block').style.display = "block";
-            document.getElementById('make_note_button').style.display = "none";
-            console.log('Making screenshot');
-            /*require(['block_notes/html2canvas'], function(h2c) {
+            const element = document.querySelector(crop_elem);
+            var rect = element.getBoundingClientRect();
+            document.getElementById('note_display_over_block').style.display = "none";
+            document.getElementById('make_note_button').style.display = "block";
+            // console.log(rect_x, rect_y, rect_w, rect_h);
+            require(['block_notes/html2canvas'], function(h2c) {
                 console.log('Making screenshot');
                 h2c(document.body, {
-                    width : 800,
-                    height : 600
+                    x: rect.left,
+                    y: rect.top,
+                    width : rect.width,
+                    height : rect.height
                 }).then(function(canvas) {
                     console.log('Got screenshot');
                     const base64image = canvas.toDataURL("image/png");
                     window.open(base64image, "_blank");
-                    wait_popup.style.display = "none";
                 });
-            });*/
+            });
 
         },
-
-
-        activateCropTool: function(div) {
-            const element = document.querySelector(div);
-            const resizers = document.querySelectorAll(div + ' .resizer')
+        activateCropTool: function(crop_elem) {
+            const element = document.querySelector(crop_elem);
+            const resizers = document.querySelectorAll(crop_elem + ' .resizer')
             const minimum_width = 250;
             const minimum_height = 150;
             let original_width = 0;
@@ -109,7 +110,5 @@ define([], function() {
                 }
             }
         }
-
-
     }
 });
