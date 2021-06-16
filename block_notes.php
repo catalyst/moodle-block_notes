@@ -18,10 +18,12 @@ class block_notes extends block_base {
             return $this->content;
         }
 
-        $this->content         =  new stdClass;
-        $this->content->text   = '<div class="note-pop-on" id="note_wait_pop_message">Please wait</div><div class="note-button-on" onclick="require([\'block_notes/notes\'], function (M) { M.makeScreenshot();});">
-                                        <span class="flex-icon ft-fw ft tfont-var-files_copy" title="Copy content to Notes"></span></div>';
-
+        $core_renderer = $this->page->get_renderer('core');
+        $this->content = new stdClass;
+        $contextdata = array(
+            'abc' => 1
+        );
+        $this->content->text = $core_renderer->render_from_template('block_notes/crop_tool', $contextdata);
         return $this->content;
     }
 }

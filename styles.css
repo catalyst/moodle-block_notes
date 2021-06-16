@@ -9,7 +9,7 @@
     border-radius: 1.5em;
     opacity: 0.7;
     top: 50%;
-    z-index: 999;
+    z-index: 9990;
     cursor: copy;
 }
 
@@ -27,6 +27,95 @@
     left: 40%;
     width: 20%;
     top: 50%;
-    z-index: 999;
+    z-index: 9990;
     cursor: wait;
+}
+
+.note-display-block{
+    display: none;
+    position: fixed;
+    background: none;
+    background-color: rgba(255, 200, 200, 0.1);
+    padding: 0;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    cursor: not-allowed;
+}
+
+.crop-tool {
+    background: rgba(255, 200, 150, 0.5);
+    width: 50%;
+    height: 50%;
+    position: absolute;
+    top: 25%;
+    left: 25%;
+    z-index: 9992;
+    cursor: default;
+}
+
+.crop-tool .resizers{
+    width: 100%;
+    height: 100%;
+    border: 4px solid rgba(226, 23, 27, 0.8);
+    box-sizing: border-box;
+}
+
+.instructions{
+    text-align: center;
+}
+
+.crop-tool .resizers .resizer{
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    border: 4px solid rgba(226, 23, 27, 0.8);
+    position: absolute;
+    background-color: rgba(255, 255, 255, 1);
+}
+
+.crop-tool .resizers .resizer.top-left {
+    left: -5px;
+    top: -5px;
+    cursor: nwse-resize;
+}
+.crop-tool .resizers .resizer.top-right {
+    right: -5px;
+    top: -5px;
+    cursor: nesw-resize;
+}
+.crop-tool .resizers .resizer.bottom-left {
+    left: -5px;
+    bottom: -5px;
+    cursor: nesw-resize;
+}
+.crop-tool .resizers .resizer.bottom-right {
+    right: -5px;
+    bottom: -5px;
+    cursor: nwse-resize;
+}
+
+.btn-crop {
+    opacity: 0.9;
+    position: absolute;
+    text-align: center;
+    padding: 0.6em;
+    bottom: 20px;
+    width: 100px;
+    z-index: 993;
+    border: 4px solid #e2231b;
+    cursor: pointer;
+}
+
+.btn-crop.s001 {
+    color: #e2231b;
+    background-color: white;
+    right: 140px;
+}
+.btn-crop.s002 {
+    background-color: #e2231b;
+    color: white;
+    right: 20px;
 }
