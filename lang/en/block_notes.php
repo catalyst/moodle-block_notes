@@ -9,3 +9,4 @@ $string['crop'] = 'Crop';
 $string['cancel'] = 'Cancel';
 $string['configstoragelimit'] = 'Allow user to use the amount of storage for saving notes';
 $string['storagelimit'] = 'Limit storage of user notes (Mb)';
+$string['notestring'] = 'Simple configuration string';
