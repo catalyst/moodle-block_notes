@@ -6,6 +6,7 @@ $CFG->cachejs = false;
 class block_notes extends block_base {
     public function init() {
         global $PAGE, $CFG;
+        $PAGE->requires->js_call_amd('block_notes/notes', 'initNote');
         $this->title = get_string('pluginname', 'block_notes');
     }
 

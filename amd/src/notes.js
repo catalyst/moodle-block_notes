@@ -1,7 +1,9 @@
-define([], function() {
+define(['jquery', 'core/ajax'],
+    function($, ajax) {
     return {
         initNote: function() {
-            window.console.log('Block Notes initialized');
+            //const element = document.querySelector('.block_notes');
+            //element.parentElement.style.height = '0px';
         },
         cancel: function() {
             document.getElementById('note_display_over_block').style.display = "none";
@@ -10,6 +12,20 @@ define([], function() {
         showCropTool: function() {
             document.getElementById('note_display_over_block').style.display = "block";
             document.getElementById('make_note_button').style.display = "none";
+
+            var promises = ajax.call([{
+                methodname: 'block_notes_create_labels',
+                args: { userid: 2, name: "Label 003"}
+            }], true);
+
+            $.when.apply($, promises)
+                .done(function(data) {
+                    alert('Check database');
+                })
+                .fail(function(data) {
+                    console.log(data);
+                });
+
         },
         makeScreenshot: function(crop_elem) {
             const screenshotTarget = document.body;
