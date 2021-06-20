@@ -8,6 +8,7 @@
             <FIELDS>
                 <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
                 <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The user account this note is linked to."/>
+                <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The course to which the label belongs."/>
                 <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="The text label for the set of notes"/>
                 <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
                 <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
@@ -15,7 +16,7 @@
             <KEYS>
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
                 <KEY NAME="userid_key" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
-                <KEY NAME="uniq_key" TYPE="unique" FIELDS="userid, name"/>
+                <KEY NAME="uniq_key" TYPE="unique" FIELDS="userid, courseid, name"/>
             </KEYS>
             <INDEXES>
                 <INDEX NAME="search_index" UNIQUE="false" FIELDS="userid, name"/>

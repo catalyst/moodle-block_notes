@@ -17,13 +17,14 @@ class external extends \external_api {
         return new \external_function_parameters(
             [
                 'userid' => new \external_value(PARAM_INT, 'id of the user creating a label'),
+                'courseid' => new \external_value(PARAM_INT, 'id of the course where a label is created'),
                 'name' => new \external_value(PARAM_TEXT, 'The name of the label to be created')
             ]
         );
     }
 
     /**
-     * Returns id, userid and name of the newly created label
+     * Returns id, userid, courseid and name of the newly created label
      * @return \external_function_parameters
      */
     public static function create_label_returns() {
@@ -31,6 +32,7 @@ class external extends \external_api {
             [
                 'id' => new \external_value(PARAM_INT, 'Label id'),
                 'userid' => new \external_value(PARAM_INT, 'id of the user creating a label'),
+                'courseid' => new \external_value(PARAM_INT, 'id of the course where a label is created'),
                 'name' => new \external_value(PARAM_TEXT, 'The name of the label to be created')
             ]
         );
@@ -38,14 +40,16 @@ class external extends \external_api {
 
     /**
      * @param $userid id of the user creating a label
+     * @param $courseid id of the user creating a label
      * @param $name name of the label
      * @return \stdClass
      * @throws \dml_exception
      * @throws \invalid_parameter_exception
      */
-    public static function create_label($userid, $name) {
+    public static function create_label($userid, id $courseid, $name) {
         self::validate_parameters(self::create_label_parameters(), [
             'userid' => $userid,
+            'courseid' => $courseid,
             'name' => $name
         ]);
         global $DB, $USER;
@@ -55,6 +59,7 @@ class external extends \external_api {
 
         $label = new \stdClass();
         $label->userid = $userid;
+        $label->courseid = $courseid;
         $label->name = $name;
         $label->timecreated = time();
         $label->timemodified = time();

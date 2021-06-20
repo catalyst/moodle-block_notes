@@ -115,6 +115,7 @@ class block_notes extends block_base {
             'abc' => 1
         );
         $this->content->text = $core_renderer->render_from_template('block_notes/crop_tool', $contextdata);
+
         return $this->content;
     }
 }

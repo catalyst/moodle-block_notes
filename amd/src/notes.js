@@ -13,7 +13,7 @@ define(['jquery', 'core/ajax'],
             document.getElementById('note_display_over_block').style.display = "block";
             document.getElementById('make_note_button').style.display = "none";
 
-            var promises = ajax.call([{
+/*            var promises = ajax.call([{
                 methodname: 'block_notes_create_labels',
                 args: { userid: 2, name: "Label 003"}
             }], true);
@@ -24,7 +24,7 @@ define(['jquery', 'core/ajax'],
                 })
                 .fail(function(data) {
                     console.log(data);
-                });
+                });*/
 
         },
         makeScreenshot: function(crop_elem) {
