@@ -10,3 +10,6 @@ $string['cancel'] = 'Cancel';
 $string['configstoragelimit'] = 'Allow user to use the amount of storage for saving notes';
 $string['storagelimit'] = 'Limit storage of user notes (Mb)';
 $string['notestring'] = 'Simple configuration string';
+$string['label'] = 'Label';
+$string['created'] = 'Created Date';
+$string['deletelabelconfirm'] = 'The label and the notes with this label will be deleted. Do you want to continue?';
