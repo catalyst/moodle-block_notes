@@ -1,4 +1,29 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Script to let users manage their notes and labels.
+ *
+ * @package   block_notes
+ * @author    Kateryna Degtyariova katerynadegtyariova@catalyst-au.net
+ * @copyright 2021 Catalyst IT
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+
 require('../../config.php');
 
 require_login();
@@ -8,9 +33,9 @@ $blockinstanceid = required_param('blockinstanceid', PARAM_INT);
 $urlparams['blockinstanceid'] = $blockinstanceid;
 $baseurl = new moodle_url('/blocks/notes/manage_notes.php', $urlparams);
 
-$block_ctx = context_block::instance($blockinstanceid);
-$course_ctx = $block_ctx->get_course_context();
-$PAGE->set_context($block_ctx);
+$blockctx = context_block::instance($blockinstanceid);
+$coursectx = $blockctx->get_course_context();
+$PAGE->set_context($blockctx);
 $PAGE->set_url($baseurl);
 
 $s = get_string('notestring', 'block_notes');
@@ -18,9 +43,9 @@ $PAGE->set_title($s);
 $PAGE->set_heading('Notes Heading');
 echo $OUTPUT->header();
 
-$params = ['userid' => $USER->id, 'courseid' => $course_ctx->instanceid];
+$params = ['userid' => $USER->id, 'courseid' => $coursectx->instanceid];
 
-$sql = "SELECT n.id, n.description, n.url, lb.id AS labelid, lb.name, lb.timemodified AS labeltimemodified
+$sql = "SELECT n.id, n.description, n.url, n.fileid, lb.id AS labelid, lb.name, lb.timemodified AS labeltimemodified
         FROM {block_note_labels} lb
         LEFT JOIN {block_notes} n ON n.labelid = lb.id
         WHERE userid = :userid AND courseid = :courseid
@@ -29,18 +54,18 @@ $sql = "SELECT n.id, n.description, n.url, lb.id AS labelid, lb.name, lb.timemod
 
 $records = $DB->get_records_sql($sql, $params);
 
+/*
+ * Set up the flexible table to display all labels
+ */
 $table = new flexible_table('labels-view');
-
 $table->define_columns(array('label', 'created', 'actions'));
 $table->define_headers(array(get_string('label', 'block_notes'),
                              get_string('created', 'block_notes'),
                              get_string('actions', 'moodle')));
 $table->define_baseurl($baseurl);
-
 $table->set_attribute('cellspacing', '0');
 $table->set_attribute('id', 'id');
 $table->set_attribute('class', 'generaltable generalbox');
-
 $table->set_control_variables(array(
     TABLE_VAR_SORT    => 'ssort',
     TABLE_VAR_HIDE    => 'shide',
@@ -49,54 +74,66 @@ $table->set_control_variables(array(
     TABLE_VAR_ILAST   => 'silast',
     TABLE_VAR_PAGE    => 'spage'
 ));
-
 $table->sortable(true);
 $table->setup();
-$core_renderer = $PAGE->get_renderer('core');
-$sorted_records = array();
 
+$renderer = $PAGE->get_renderer('core');
+$fs = get_file_storage();
+$sorted = array();
+
+/*
+ * Transform the array from flat result rows into the array containing
+ * 'labelid' as key and containing a nested array 'notes' containing data
+ * for notes that are marked with this label.
+ */
 foreach ($records as $rec) {
-    $sorted_records[$rec->labelid]['name'] = $rec->name;
-    $sorted_records[$rec->labelid]['labeltimemodified'] = $rec->labeltimemodified;
+    $sorted[$rec->labelid]['name'] = $rec->name;
+    $sorted[$rec->labelid]['labeltimemodified'] = $rec->labeltimemodified;
     if (isset($rec->id)) {
-        $sorted_records[$rec->labelid]['notes'][] = [
+        $sorted[$rec->labelid]['notes'][] = [
             'id' => $rec->id,
             'description' => $rec->description,
-            'url' => $rec->url
+            'url' => $rec->url,
+            'fileid' => $rec->fileid
         ];
     }
 }
 
-//print_object($sorted_records);
-
-foreach ($sorted_records as $labelid => $record) {
+foreach ($sorted as $labelid => $record) {
     $ncontent = "";
     if (isset($record['notes'])) {
-        $region_content = '';
-        foreach($record['notes'] as $note) {
-            $region_content .= $core_renderer->render_from_template('block_notes/note', $note);
+        $regioncontent = '';
+        // Generate the notes content for the collapsible region.
+        foreach ($record['notes'] as $note) {
+            $file = $fs->get_file_by_id($note['fileid']);
+            $url = moodle_url::make_pluginfile_url($file->get_contextid(), $file->get_component(),
+                $file->get_filearea(), $file->get_itemid(), $file->get_filepath(),
+                $file->get_filename());
+            $note['furl'] = $url;
+            $regioncontent .= $renderer->render_from_template('block_notes/note', $note);
         }
-
-        $ncontent = print_collapsible_region($region_content, '', 'note-label-id'.$labelid,
+        $ncontent = print_collapsible_region($regioncontent, '', 'note-label-id'.$labelid,
             get_string('notes', 'block_notes'), '', true, true);
     }
 
     $labelinfo = '<div class="title">' . $record['name'] . '</div>'. $ncontent;
-
-    $labeldate = strftime(get_string('strftimerecentfull', 'langconfig'), $record['labeltimemodified']/1000);
-
-    //echo $core_renderer->render_from_template('block_notes/label', $label);
+    $labeldate = strftime(get_string('strftimerecentfull', 'langconfig'), $record['labeltimemodified'] / 1000);
     $editurl = new moodle_url('/blocks/notes/edit_note.php?id=' . $labelid . $extraparams);
     $editaction = $OUTPUT->action_icon($editurl, new pix_icon('t/edit', get_string('edit')));
-
-    $deleteurl = new moodle_url('/blocks/notes/manage_notes.php?deletelabelid=' . $labelid . '&sesskey=' . sesskey() . $extraparams);
+    $deleteurl = new moodle_url('/blocks/notes/manage_notes.php?deletelabelid='.
+        $labelid . '&sesskey=' . sesskey() . $extraparams);
     $deleteicon = new pix_icon('t/delete', get_string('delete'));
-    $deleteaction = $OUTPUT->action_icon($deleteurl, $deleteicon, new confirm_action(get_string('deletelabelconfirm', 'block_notes')));
-
+    $deleteaction = $OUTPUT->action_icon($deleteurl, $deleteicon,
+        new confirm_action(get_string('deletelabelconfirm', 'block_notes')));
     $labelicons = $editaction . ' ' . $deleteaction;
-
     $table->add_data(array($labelinfo, $labeldate, $labelicons));
-
 }
 $table->finish_output();
 echo $OUTPUT->footer();
+?>
+<script>
+    function uncollapseImg(elem) {
+        document.getElementById(elem).style.maxWidth = "1000px";
+        document.getElementById(elem).style.maxHeight = "1000px";
+    }
+</script>

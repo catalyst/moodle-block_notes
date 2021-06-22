@@ -31,27 +31,29 @@ define(['jquery', 'core/ajax'],
             const screenshotTarget = document.body;
             const element = document.querySelector(crop_elem);
             var rect = element.getBoundingClientRect();
-            document.getElementById('note_display_over_block').style.display = "none";
-            document.getElementById('make_note_button').style.display = "block";
-            // console.log(rect_x, rect_y, rect_w, rect_h);
+            var blockobject = document.getElementById('note_display_over_block');
+            blockobject.style.display = "none";
+            console.log(window.scrollY);
             require(['block_notes/html2canvas'], function(h2c) {
-                console.log('Making screenshot');
+                let xx = rect.left + window.scrollX;
+                let yy = rect.top + 2 *window.scrollY;
+                console.log(xx, yy);
                 h2c(document.body, {
-                    x: rect.left,
-                    y: rect.top,
+                    scale: 1,
+                    x: xx,
+                    y: yy,
                     width : rect.width,
-                    height : rect.height
+                    height : rect.height,
                 }).then(function(canvas) {
-                    console.log('Got screenshot');
                     const base64image = canvas.toDataURL("image/png");
                     window.open(base64image, "_blank");
                 });
             });
-
+            document.getElementById('make_note_button').style.display = "block";
         },
         activateCropTool: function(crop_elem) {
             const element = document.querySelector(crop_elem);
-            const resizers = document.querySelectorAll(crop_elem + ' .resizer')
+            const resizers = document.querySelectorAll(crop_elem + ' .crop-tool-control')
             const minimum_width = 250;
             const minimum_height = 150;
             let original_width = 0;
@@ -60,7 +62,7 @@ define(['jquery', 'core/ajax'],
             let original_y = 0;
             let original_mouse_x = 0;
             let original_mouse_y = 0;
-            for (let i = 0;i < resizers.length; i++) {
+            for (let i = 0; i < resizers.length; i++) {
                 const currentResizer = resizers[i];
                 currentResizer.addEventListener('mousedown', function(e) {
                     e.preventDefault()
@@ -70,14 +72,40 @@ define(['jquery', 'core/ajax'],
                     original_y = element.getBoundingClientRect().top;
                     original_mouse_x = e.pageX;
                     original_mouse_y = e.pageY;
+                    if (currentResizer.classList.contains('crop-tool-window')) {
+                        let scr_x_pos = e.pageX - window.scrollX;
+                        let scr_y_pos = e.pageY - window.scrollY;
+                        if (scr_x_pos - original_x < 10 ||
+                            scr_y_pos - original_y < 10 ||
+                            original_x + original_width - scr_x_pos < 10 ||
+                            original_y + original_height - scr_y_pos < 10
+                        ) {
+                            return;
+                        }
+                    }
                     window.addEventListener('mousemove', resize)
                     window.addEventListener('mouseup', stopResize)
                 })
 
                 function resize(e) {
-                    if (currentResizer.classList.contains('bottom-right')) {
+                    if (currentResizer.classList.contains('crop-tool-window')) {
+                        let pos_x = original_x + (e.pageX - original_mouse_x);
+                        let pos_y = original_y + (e.pageY - original_mouse_y);
+                        if (pos_x <= 0)
+                            pos_x = 0;
+                        if (pos_y <= 0)
+                            pos_y = 0;
+                        if (pos_x + original_width >= element.parentElement.getBoundingClientRect().width)
+                            pos_x = element.parentElement.getBoundingClientRect().width - original_width;
+                        if (pos_y + original_height >= element.parentElement.getBoundingClientRect().height)
+                            pos_y = element.parentElement.getBoundingClientRect().height - original_height;
+
+                        element.style.left = pos_x + 'px';
+                        element.style.top = pos_y + 'px';
+                    }
+                    else if (currentResizer.classList.contains('bottom-right')) {
                         const width = original_width + (e.pageX - original_mouse_x);
-                        const height = original_height + (e.pageY - original_mouse_y)
+                        const height = original_height + (e.pageY - original_mouse_y);
                         if (width > minimum_width) {
                             element.style.width = width + 'px'
                         }
@@ -122,7 +150,8 @@ define(['jquery', 'core/ajax'],
                 }
 
                 function stopResize() {
-                    window.removeEventListener('mousemove', resize)
+                    window.removeEventListener('mousemove', resize);
+                    allow_element = true;
                 }
             }
         }
