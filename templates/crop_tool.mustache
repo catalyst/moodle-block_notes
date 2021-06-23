@@ -10,7 +10,13 @@
         </div>
     </div>
 </div>
-<div class="note-button-on data-html2canvas-ignore" id="make_note_button">
+<div class="note-display-block-wait" data-html2canvas-ignore id="note_display_wait_block">
+  <div class="note-pop-on" data-html2canvas-ignore>{{# str }} waitmessage, block_notes {{/ str }}</div>
+</div>
+<div onclick="document.getElementById('note_display_note_block').style.display='none'" class="note-display-block-wait" data-html2canvas-ignore id="note_display_note_block">
+  <img id="noteimagepreview">
+</div>
+<div class="note-button-on" data-html2canvas-ignore id="make_note_button">
     <span class="flex-icon ft-fw ft tfont-var-files_copy note-button" title="{{# str }} copybuttontip, block_notes {{/ str }}" onclick="require(['block_notes/notes'], function (M) { M.showCropTool(); M.activateCropTool('.crop-tool')});"></span><br/><br/>
     <span class="flex-icon ft-fw ft tfont-var-explore note-button" title="{{# str }} explorebuttontip, block_notes {{/ str }}" onclick="window.location.href='/blocks/notes/manage_notes.php?blockinstanceid={{blockinstanceid}}'"></span></a>
 </div>

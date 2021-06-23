@@ -28,6 +28,7 @@ $string['notes'] = 'Notes';
 $string['notes:addinstance'] = 'Add a new Notes block';
 $string['notes:myaddinstance'] = 'Add a new Notes block to the My Moodle page';
 $string['instructions'] = 'Use mouse cursor to adjust the cropping area';
+$string['waitmessage'] = 'Please wait while data is being saved';
 $string['copybuttontip'] = 'Copy screen content to Notes';
 $string['explorebuttontip'] = 'Explore Notes';
 $string['crop'] = 'Crop';
@@ -38,3 +39,5 @@ $string['notestring'] = 'Simple configuration string';
 $string['label'] = 'Label';
 $string['created'] = 'Created Date';
 $string['deletelabelconfirm'] = 'The label and the notes with this label will be deleted. Do you want to continue?';
+$string['deletenoteconfirm'] = 'The note will be deleted. Do you want to continue?';
+

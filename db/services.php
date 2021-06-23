@@ -14,7 +14,18 @@ $functions = [
         'capabilities'=> '',
         'ajax'        => true,
         'loginrequired' => true,
-    ]/*,
+    ],
+    'block_notes_upload' => [
+        'classname'   => '\\block_notes\\upload',
+        'methodname'  => 'upload',
+        'classpath'   => 'blocks/notes/classes/external.php',
+        'description' => 'Uploads the screenshot and creates a note',
+        'type'        => 'write',
+        'capabilities'=> '',
+        'ajax'        => true,
+        'loginrequired' => true,
+    ]
+    /*,
     'block_notes_get_labels' => [
         'classname'   => '\\block_notes\\external',
         'methodname'  => 'get_labels',

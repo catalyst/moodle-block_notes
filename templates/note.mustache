@@ -42,7 +42,10 @@
     }
 }}
 <div class="note-container">
-    <div class="description"><img id="imgthumbnote{{id}}" onclick="uncollapseImg('imgthumbnote{{id}}');" class="img-thumb-note" src="{{furl}}"></div>
-    <div class="description">NOTE: {{description}}</div>
-    <div class="description">URL: <a href="{{url}}">{{url}}</a></div>
+    <div class="note-info-block">
+      <div class="description"><img id="imgthumbnote{{id}}" onclick="uncollapseImg('imgthumbnote{{id}}');" class="img-thumb-note" src="{{furl}}"></div>
+      <div class="description note-container">NOTE: {{description}}</div>
+      <div class="description">URL: <a href="{{url}}">{{url}}</a></div>
+      <div class="description">{{{deleteaction}}}</div>
+    </div>
 </div>

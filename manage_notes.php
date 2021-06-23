@@ -45,11 +45,12 @@ echo $OUTPUT->header();
 
 $params = ['userid' => $USER->id, 'courseid' => $coursectx->instanceid];
 
-$sql = "SELECT n.id, n.description, n.url, n.fileid, lb.id AS labelid, lb.name, lb.timemodified AS labeltimemodified
+$sql = "SELECT n.id, n.description, n.url, n.fileid, lb.id AS labelid, lb.name, lb.timemodified AS labeltimemodified,
+        n.timemodified AS ntimemodified
         FROM {block_note_labels} lb
         LEFT JOIN {block_notes} n ON n.labelid = lb.id
         WHERE userid = :userid AND courseid = :courseid
-        ORDER BY lb.timemodified DESC
+        ORDER BY labeltimemodified DESC, ntimemodified DESC
 ";
 
 $records = $DB->get_records_sql($sql, $params);
@@ -99,30 +100,33 @@ foreach ($records as $rec) {
     }
 }
 
+$deleteicon = new pix_icon('t/delete', get_string('delete'));
 foreach ($sorted as $labelid => $record) {
-    $ncontent = "";
+    $regioncontent = "";
     if (isset($record['notes'])) {
-        $regioncontent = '';
         // Generate the notes content for the collapsible region.
+        $regioncontent = print_collapsible_region_start('', 'note-label-id'.$labelid,
+            get_string('notes', 'block_notes'), '', false, true);
         foreach ($record['notes'] as $note) {
             $file = $fs->get_file_by_id($note['fileid']);
-            $url = moodle_url::make_pluginfile_url($file->get_contextid(), $file->get_component(),
-                $file->get_filearea(), $file->get_itemid(), $file->get_filepath(),
-                $file->get_filename());
+            $url = moodle_url::make_draftfile_url($file->get_itemid(), $file->get_filepath(), $file->get_filename(), false);
             $note['furl'] = $url;
+
+            $deleteurl = new moodle_url('/blocks/notes/manage_notes.php?noteid='. $note['id'] . '&sesskey=' . sesskey() . $extraparams);
+            $note['deleteaction'] = $OUTPUT->action_icon($deleteurl, $deleteicon,
+                new confirm_action(get_string('deletenoteconfirm', 'block_notes')));
+
             $regioncontent .= $renderer->render_from_template('block_notes/note', $note);
         }
-        $ncontent = print_collapsible_region($regioncontent, '', 'note-label-id'.$labelid,
-            get_string('notes', 'block_notes'), '', true, true);
+        $regioncontent .= print_collapsible_region_end(true);
     }
 
-    $labelinfo = '<div class="title">' . $record['name'] . '</div>'. $ncontent;
+    $labelinfo = '<div class="title">' . $record['name'] . '</div>'. $regioncontent;
     $labeldate = strftime(get_string('strftimerecentfull', 'langconfig'), $record['labeltimemodified'] / 1000);
     $editurl = new moodle_url('/blocks/notes/edit_note.php?id=' . $labelid . $extraparams);
     $editaction = $OUTPUT->action_icon($editurl, new pix_icon('t/edit', get_string('edit')));
     $deleteurl = new moodle_url('/blocks/notes/manage_notes.php?deletelabelid='.
         $labelid . '&sesskey=' . sesskey() . $extraparams);
-    $deleteicon = new pix_icon('t/delete', get_string('delete'));
     $deleteaction = $OUTPUT->action_icon($deleteurl, $deleteicon,
         new confirm_action(get_string('deletelabelconfirm', 'block_notes')));
     $labelicons = $editaction . ' ' . $deleteaction;
@@ -133,7 +137,8 @@ echo $OUTPUT->footer();
 ?>
 <script>
     function uncollapseImg(elem) {
-        document.getElementById(elem).style.maxWidth = "1000px";
-        document.getElementById(elem).style.maxHeight = "1000px";
+        let obj = document.getElementById(elem);
+        document.getElementById('noteimagepreview').src = obj.src;
+        document.getElementById('note_display_note_block').style.display = 'block';
     }
 </script>

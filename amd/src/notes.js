@@ -2,8 +2,7 @@ define(['jquery', 'core/ajax'],
     function($, ajax) {
     return {
         initNote: function() {
-            //const element = document.querySelector('.block_notes');
-            //element.parentElement.style.height = '0px';
+            //document.getElementById('note_display_wait_block').style.display = "block";
         },
         cancel: function() {
             document.getElementById('note_display_over_block').style.display = "none";
@@ -12,20 +11,6 @@ define(['jquery', 'core/ajax'],
         showCropTool: function() {
             document.getElementById('note_display_over_block').style.display = "block";
             document.getElementById('make_note_button').style.display = "none";
-
-/*            var promises = ajax.call([{
-                methodname: 'block_notes_create_labels',
-                args: { userid: 2, name: "Label 003"}
-            }], true);
-
-            $.when.apply($, promises)
-                .done(function(data) {
-                    alert('Check database');
-                })
-                .fail(function(data) {
-                    console.log(data);
-                });*/
-
         },
         makeScreenshot: function(crop_elem) {
             const screenshotTarget = document.body;
@@ -33,7 +18,8 @@ define(['jquery', 'core/ajax'],
             var rect = element.getBoundingClientRect();
             var blockobject = document.getElementById('note_display_over_block');
             blockobject.style.display = "none";
-            console.log(window.scrollY);
+            // Show the wait block
+            document.getElementById('note_display_wait_block').style.display = "block";
             require(['block_notes/html2canvas'], function(h2c) {
                 let xx = rect.left + window.scrollX;
                 let yy = rect.top + 2 *window.scrollY;
@@ -46,16 +32,44 @@ define(['jquery', 'core/ajax'],
                     height : rect.height,
                 }).then(function(canvas) {
                     const base64image = canvas.toDataURL("image/png");
-                    window.open(base64image, "_blank");
+                    let datestr = Date.now();
+                    var promises = ajax.call([{
+                        methodname: 'block_notes_upload',
+                        args: {
+                            contextid: 5,  // TODO: set real context ID
+                            component: 'user',
+                            filearea: 'draft', // TODO: set proper area
+                            itemid: 107,         // TODO: set real itemid
+                            filepath: '/',
+                            filename: 'note-screen-' + Date.now() + '.png',
+                            userid: 2, // TODO: set the proper User ID
+                            filecontent: base64image,
+                            contextlevel: 'block',
+                            instanceid: 107, // TODO: put the proper instance ID
+                            labelid: 3, // TODO: use the real label ID
+                            noteurl: window.location.href,
+                            notedescription: 'Note text at ' + datestr
+                        }
+                    }], true);
+                    $.when.apply($, promises)
+                        .done(function(data) {
+                            alert('Note is saved');
+                        })
+                        .fail(function(data) {
+                            console.log(data);
+                        });
+                    //window.open(base64image, "_blank");
+                    document.getElementById('note_display_wait_block').style.display = "none";
                 });
             });
+            // Hide the wait block
             document.getElementById('make_note_button').style.display = "block";
         },
         activateCropTool: function(crop_elem) {
             const element = document.querySelector(crop_elem);
             const resizers = document.querySelectorAll(crop_elem + ' .crop-tool-control')
-            const minimum_width = 250;
-            const minimum_height = 150;
+            const minimum_width = 150;
+            const minimum_height = 80;
             let original_width = 0;
             let original_height = 0;
             let original_x = 0;
