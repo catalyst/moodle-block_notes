@@ -5,7 +5,7 @@
             <div class="crop-tool-control resizer top-right"></div>
             <div class="crop-tool-control resizer bottom-left"></div>
             <div class="crop-tool-control resizer bottom-right"></div>
-            <div class="btn-crop s001" onclick="require(['block_notes/notes'], function (M) { M.makeScreenshot('.crop-tool');});">{{# str }} crop, block_notes {{/ str }}</div>
+            <div class="btn-crop s001" onclick="require(['block_notes/notes'], function (M) { M.makeScreenshot('.crop-tool', 5, {{blockinstanceid}}, {{userid}}, 3);});">{{# str }} crop, block_notes {{/ str }}</div>
             <div class="btn-crop s002" onclick="require(['block_notes/notes'], function (M) { M.cancel();});">{{# str }} cancel, block_notes {{/ str }}</div>
         </div>
     </div>

@@ -191,4 +191,5 @@ a.note-button, a.note-button:visited, .note-button {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    cursor: pointer;
 }

@@ -29,23 +29,47 @@ require('../../config.php');
 require_login();
 
 $extraparams = '';
+$urlparams = array();
+
 $blockinstanceid = required_param('blockinstanceid', PARAM_INT);
+$deletenoteid = optional_param('deletenoteid', 0, PARAM_INT);
+$deletelabelid = optional_param('deletelabelid', 0, PARAM_INT);
+
 $urlparams['blockinstanceid'] = $blockinstanceid;
+$extraparams = "&blockinstanceid=" . $blockinstanceid;
+
 $baseurl = new moodle_url('/blocks/notes/manage_notes.php', $urlparams);
+$PAGE->set_url($baseurl);
+
+// Process note deleting.
+if ($deletenoteid && confirm_sesskey()) {
+    $DB->delete_records('block_notes', array('id'=>$deletenoteid));
+    // TODO: Delete files
+    redirect($PAGE->url, get_string('notedeleted', 'block_notes'));
+}
+
+// Process label deleting
+if ($deletelabelid && confirm_sesskey()) {
+    $DB->delete_records('block_notes', array('labelid'=>$deletelabelid));
+    $DB->delete_records('block_note_labels', array('id'=>$deletelabelid));
+    // TODO: Delete files
+    redirect($PAGE->url, get_string('labeldeleted', 'block_notes'));
+}
 
 $blockctx = context_block::instance($blockinstanceid);
 $coursectx = $blockctx->get_course_context();
 $PAGE->set_context($blockctx);
-$PAGE->set_url($baseurl);
 
 $s = get_string('notestring', 'block_notes');
 $PAGE->set_title($s);
 $PAGE->set_heading('Notes Heading');
 echo $OUTPUT->header();
+$newlabelurl = new moodle_url('/blocks/notes/editlabel.php?'. $extraparams);
+echo '<div><a href="' . $newlabelurl . '">' . get_string('addlabel', 'block_notes') . '</a></div>';
 
 $params = ['userid' => $USER->id, 'courseid' => $coursectx->instanceid];
 
-$sql = "SELECT n.id, n.description, n.url, n.fileid, lb.id AS labelid, lb.name, lb.timemodified AS labeltimemodified,
+$sql = "SELECT CONCAT(n.id, '_', lb.id) AS uniquestr, n.id, n.description, n.url, n.fileid, lb.id AS labelid, lb.name, lb.timemodified AS labeltimemodified,
         n.timemodified AS ntimemodified
         FROM {block_note_labels} lb
         LEFT JOIN {block_notes} n ON n.labelid = lb.id
@@ -101,6 +125,7 @@ foreach ($records as $rec) {
 }
 
 $deleteicon = new pix_icon('t/delete', get_string('delete'));
+$editicon = new pix_icon('t/edit', get_string('edit'));
 foreach ($sorted as $labelid => $record) {
     $regioncontent = "";
     if (isset($record['notes'])) {
@@ -112,7 +137,10 @@ foreach ($sorted as $labelid => $record) {
             $url = moodle_url::make_draftfile_url($file->get_itemid(), $file->get_filepath(), $file->get_filename(), false);
             $note['furl'] = $url;
 
-            $deleteurl = new moodle_url('/blocks/notes/manage_notes.php?noteid='. $note['id'] . '&sesskey=' . sesskey() . $extraparams);
+            $editurl = new moodle_url('/blocks/notes/edit_notes.php?noteid='. $note['id'] );
+            $note['editaction'] = $OUTPUT->action_icon($editurl, $editicon);
+
+            $deleteurl = new moodle_url('/blocks/notes/manage_notes.php?deletenoteid='. $note['id'] . '&sesskey=' . sesskey() . $extraparams);
             $note['deleteaction'] = $OUTPUT->action_icon($deleteurl, $deleteicon,
                 new confirm_action(get_string('deletenoteconfirm', 'block_notes')));
 
@@ -122,9 +150,10 @@ foreach ($sorted as $labelid => $record) {
     }
 
     $labelinfo = '<div class="title">' . $record['name'] . '</div>'. $regioncontent;
-    $labeldate = strftime(get_string('strftimerecentfull', 'langconfig'), $record['labeltimemodified'] / 1000);
-    $editurl = new moodle_url('/blocks/notes/edit_note.php?id=' . $labelid . $extraparams);
-    $editaction = $OUTPUT->action_icon($editurl, new pix_icon('t/edit', get_string('edit')));
+    // TODO: convert from UTC to user time
+    $labeldate = strftime(get_string('strftimerecentfull', 'langconfig'), $record['labeltimemodified']);
+    $editurl = new moodle_url('/blocks/notes/editlabel.php?labelid=' . $labelid . $extraparams);
+    $editaction = $OUTPUT->action_icon($editurl, $editicon);
     $deleteurl = new moodle_url('/blocks/notes/manage_notes.php?deletelabelid='.
         $labelid . '&sesskey=' . sesskey() . $extraparams);
     $deleteaction = $OUTPUT->action_icon($deleteurl, $deleteicon,

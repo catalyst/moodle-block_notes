@@ -128,6 +128,7 @@ class block_notes extends block_base {
     }
 
     public function get_content() {
+        global $USER;
         if ($this->content !== null) {
             return $this->content;
         }
@@ -135,7 +136,8 @@ class block_notes extends block_base {
         $core_renderer = $this->page->get_renderer('core');
         $this->content = new stdClass;
         $contextdata = array(
-            'blockinstanceid' => $this->context->instanceid
+            'blockinstanceid' => $this->context->instanceid,
+            'userid' => $USER->id
         );
         $this->content->text = $core_renderer->render_from_template('block_notes/crop_tool', $contextdata);
 

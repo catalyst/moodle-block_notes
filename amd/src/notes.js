@@ -1,5 +1,5 @@
-define(['jquery', 'core/ajax'],
-    function($, ajax) {
+define(['jquery', 'core/ajax', 'core/modal_factory'],
+    function($, ajax, modalfactory) {
     return {
         initNote: function() {
             //document.getElementById('note_display_wait_block').style.display = "block";
@@ -12,7 +12,7 @@ define(['jquery', 'core/ajax'],
             document.getElementById('note_display_over_block').style.display = "block";
             document.getElementById('make_note_button').style.display = "none";
         },
-        makeScreenshot: function(crop_elem) {
+        makeScreenshot: function(crop_elem, ctxid, blockid, userid, labelid) {
             const screenshotTarget = document.body;
             const element = document.querySelector(crop_elem);
             var rect = element.getBoundingClientRect();
@@ -36,17 +36,17 @@ define(['jquery', 'core/ajax'],
                     var promises = ajax.call([{
                         methodname: 'block_notes_upload',
                         args: {
-                            contextid: 5,  // TODO: set real context ID
+                            contextid: ctxid,
                             component: 'user',
                             filearea: 'draft', // TODO: set proper area
-                            itemid: 107,         // TODO: set real itemid
+                            itemid: blockid,
                             filepath: '/',
                             filename: 'note-screen-' + Date.now() + '.png',
-                            userid: 2, // TODO: set the proper User ID
+                            userid: userid,
                             filecontent: base64image,
                             contextlevel: 'block',
-                            instanceid: 107, // TODO: put the proper instance ID
-                            labelid: 3, // TODO: use the real label ID
+                            instanceid: blockid,
+                            labelid: labelid,
                             noteurl: window.location.href,
                             notedescription: 'Note text at ' + datestr
                         }
@@ -68,7 +68,7 @@ define(['jquery', 'core/ajax'],
         activateCropTool: function(crop_elem) {
             const element = document.querySelector(crop_elem);
             const resizers = document.querySelectorAll(crop_elem + ' .crop-tool-control')
-            const minimum_width = 150;
+            const minimum_width = 180;
             const minimum_height = 80;
             let original_width = 0;
             let original_height = 0;

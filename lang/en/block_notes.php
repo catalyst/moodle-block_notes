@@ -37,7 +37,14 @@ $string['configstoragelimit'] = 'Allow user to use the amount of storage for sav
 $string['storagelimit'] = 'Limit storage of user notes (Mb)';
 $string['notestring'] = 'Simple configuration string';
 $string['label'] = 'Label';
+$string['labelname'] = 'Label name';
+$string['managelabels'] = 'Manage labels';
+$string['addlabel'] = 'Add a new label';
+$string['editlabel'] = 'Edit label';
+$string['savelabel'] = 'Save label';
 $string['created'] = 'Created Date';
 $string['deletelabelconfirm'] = 'The label and the notes with this label will be deleted. Do you want to continue?';
 $string['deletenoteconfirm'] = 'The note will be deleted. Do you want to continue?';
+$string['notedeleted'] = 'The note is deleted';
+$string['labeldeleted'] = 'The label and its notes are deleted';
 
