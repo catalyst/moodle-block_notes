@@ -62,7 +62,7 @@ a.note-button, a.note-button:visited, .note-button {
     display: none;
     position: fixed;
     background: none;
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: rgba(38, 38, 38, 0.5);
     padding: 0;
     left: 0;
     top: 0;
@@ -151,6 +151,7 @@ a.note-button, a.note-button:visited, .note-button {
 .img-thumb-note
 {
     max-height: 50px;
+    min-height: 50px;
     cursor: pointer;
     border: 1px solid #cccccc;
 }

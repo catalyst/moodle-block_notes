@@ -1,8 +1,56 @@
-define(['jquery', 'core/ajax', 'core/modal_factory'],
-    function($, ajax, modalfactory) {
+define(['jquery', 'core/ajax', 'core/templates', 'core/modal_factory', 'core/modal_events'],
+    function($, ajax, templates, ModalFactory, ModalEvents) {
+
+        var saveDataToServer = function(ctxid, blockid, userid, imagedata, labelid, notedescription)
+        {
+            let datestr = Date.now();
+            var promises = ajax.call([{
+                methodname: 'block_notes_upload',
+                args: {
+                    contextid: ctxid,
+                    component: 'user',
+                    filearea: 'draft', // TODO: set proper area
+                    itemid: blockid,
+                    filepath: '/',
+                    filename: 'note-screen-' + Date.now() + '.png',
+                    userid: userid,
+                    filecontent: imagedata,
+                    contextlevel: 'block',
+                    instanceid: blockid,
+                    labelid: labelid,
+                    noteurl: window.location.href,
+                    notedescription: notedescription
+                }
+            }], true);
+            $.when.apply($, promises)
+                .done(function(data) {
+                    alert('Note is saved');
+                })
+                .fail(function(data) {
+                    console.log(data);
+                });
+
+        };
+
+        var doModalDialog = function(ctxid, blockid, userid, courseid, imagedata) {
+            let labelid = 14;
+            let notedescription = 'Another Note';
+            ModalFactory.create({
+                type: ModalFactory.types.SAVE_CANCEL,
+                title: 'Save note',
+                body: 'Do you really want to save?',
+            })
+                .then(function (modal) {
+                    var root = modal.getRoot();
+                    root.on(ModalEvents.save, function () {
+                        saveDataToServer(ctxid, blockid, userid, imagedata, labelid, notedescription)
+                    });
+                    modal.show();
+                });
+        };
+
     return {
         initNote: function() {
-            //document.getElementById('note_display_wait_block').style.display = "block";
         },
         cancel: function() {
             document.getElementById('note_display_over_block').style.display = "none";
@@ -12,7 +60,7 @@ define(['jquery', 'core/ajax', 'core/modal_factory'],
             document.getElementById('note_display_over_block').style.display = "block";
             document.getElementById('make_note_button').style.display = "none";
         },
-        makeScreenshot: function(crop_elem, ctxid, blockid, userid, labelid) {
+        makeScreenshot: function(crop_elem, ctxid, blockid, userid, courseid) {
             const screenshotTarget = document.body;
             const element = document.querySelector(crop_elem);
             var rect = element.getBoundingClientRect();
@@ -23,7 +71,6 @@ define(['jquery', 'core/ajax', 'core/modal_factory'],
             require(['block_notes/html2canvas'], function(h2c) {
                 let xx = rect.left + window.scrollX;
                 let yy = rect.top + 2 *window.scrollY;
-                console.log(xx, yy);
                 h2c(document.body, {
                     scale: 1,
                     x: xx,
@@ -31,35 +78,9 @@ define(['jquery', 'core/ajax', 'core/modal_factory'],
                     width : rect.width,
                     height : rect.height,
                 }).then(function(canvas) {
-                    const base64image = canvas.toDataURL("image/png");
-                    let datestr = Date.now();
-                    var promises = ajax.call([{
-                        methodname: 'block_notes_upload',
-                        args: {
-                            contextid: ctxid,
-                            component: 'user',
-                            filearea: 'draft', // TODO: set proper area
-                            itemid: blockid,
-                            filepath: '/',
-                            filename: 'note-screen-' + Date.now() + '.png',
-                            userid: userid,
-                            filecontent: base64image,
-                            contextlevel: 'block',
-                            instanceid: blockid,
-                            labelid: labelid,
-                            noteurl: window.location.href,
-                            notedescription: 'Note text at ' + datestr
-                        }
-                    }], true);
-                    $.when.apply($, promises)
-                        .done(function(data) {
-                            alert('Note is saved');
-                        })
-                        .fail(function(data) {
-                            console.log(data);
-                        });
-                    //window.open(base64image, "_blank");
+                    let base64image = canvas.toDataURL("image/png");
                     document.getElementById('note_display_wait_block').style.display = "none";
+                    doModalDialog(ctxid, blockid, userid, courseid, base64image);
                 });
             });
             // Hide the wait block

@@ -30,8 +30,17 @@ $CFG->cachejs = false;
 class block_notes extends block_base {
     public function init() {
         global $PAGE, $CFG;
-        $PAGE->requires->js_call_amd('block_notes/notes', 'initNote');
+        //$PAGE->requires->js_call_amd('block_notes/notes', 'initNote');
         $this->title = get_string('pluginname', 'block_notes');
+    }
+
+    /**
+     * Gets the javascript that is required for the block to work properly
+     */
+    public function get_required_javascript()
+    {
+        parent::get_required_javascript();
+        $this->page->requires->js_call_amd('block_notes/notes', 'initNote');
     }
 
     /**
@@ -128,15 +137,18 @@ class block_notes extends block_base {
     }
 
     public function get_content() {
-        global $USER;
+        global $USER, $PAGE;
         if ($this->content !== null) {
             return $this->content;
         }
 
         $core_renderer = $this->page->get_renderer('core');
         $this->content = new stdClass;
+        $coursectx = $this->context->get_course_context();
         $contextdata = array(
+            'contextid' => 5, // TODO: fix $this->context->instanceid,
             'blockinstanceid' => $this->context->instanceid,
+            'courseid' => $coursectx->instanceid,
             'userid' => $USER->id
         );
         $this->content->text = $core_renderer->render_from_template('block_notes/crop_tool', $contextdata);
