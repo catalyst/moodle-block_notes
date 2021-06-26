@@ -1,0 +1,34 @@
+<div>
+    <form>
+        <div>
+{{#labels}}
+              <label>Label:</label>&nbsp;(select an existing label)
+              <div>
+                  <select id="block_notes-label" class="form-item form-setting" size="4" style="width: 100%; max-width: revert;">{{#options}}
+                      <option value="{{id}}" {{#sel}}selected{{/sel}}>{{name}}</option>
+                  {{/options}}</select>
+              </div>
+{{/labels}}
+{{ ^labels}}
+              <div>There are no existing labels. Please specify a New Label Name.</div>
+{{/labels}}
+  </div>
+        <div>
+{{#labels}}
+              <label>New Label Name:</label>&nbsp;(or specify a name to create a new label)
+{{/labels}}
+{{ ^labels}}
+              <label>New Label Name:</label>
+{{/labels}}
+            <div>
+                <input id="block_notes-labelname" class="form-item form-setting" style="width: 100%; max-width: revert;"></input>
+            </div>
+        </div>
+        <div>
+            <label>Note Description:</label>
+            <div>
+                <textarea id="block_notes-description" rows="6" class="form-item form-setting" style="width: 100%; max-width: revert;" ></textarea>
+            </div>
+        </div>
+    </form>
+</div>

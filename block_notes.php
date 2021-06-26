@@ -146,7 +146,7 @@ class block_notes extends block_base {
         $this->content = new stdClass;
         $coursectx = $this->context->get_course_context();
         $contextdata = array(
-            'contextid' => 5, // TODO: fix $this->context->instanceid,
+            'contextid' => $this->context->id, // TODO: fix $this->context->instanceid,
             'blockinstanceid' => $this->context->instanceid,
             'courseid' => $coursectx->instanceid,
             'userid' => $USER->id

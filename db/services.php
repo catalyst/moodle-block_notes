@@ -15,6 +15,16 @@ $functions = [
         'ajax'        => true,
         'loginrequired' => true,
     ],
+    'block_notes_get_labels' => [
+        'classname'   => '\\block_notes\\external',
+        'methodname'  => 'get_labels',
+        'classpath'   => 'blocks/notes/classes/external.php',
+        'description' => 'Read the list of labels for a course',
+        'type'        => 'read',
+        'capabilities'=> '',
+        'ajax'        => true,
+        'loginrequired' => true,
+    ],
     'block_notes_upload' => [
         'classname'   => '\\block_notes\\upload',
         'methodname'  => 'upload',

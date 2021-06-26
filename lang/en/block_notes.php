@@ -23,28 +23,29 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'Notes';
-$string['notes'] = 'Notes';
-$string['notes:addinstance'] = 'Add a new Notes block';
-$string['notes:myaddinstance'] = 'Add a new Notes block to the My Moodle page';
-$string['instructions'] = 'Use mouse cursor to adjust the cropping area';
-$string['waitmessage'] = 'Please wait while data is being saved';
-$string['copybuttontip'] = 'Copy screen content to Notes';
-$string['explorebuttontip'] = 'Explore Notes';
-$string['crop'] = 'Crop';
+$string['addlabel'] = 'Add a new label';
 $string['cancel'] = 'Cancel';
 $string['configstoragelimit'] = 'Allow user to use the amount of storage for saving notes';
-$string['storagelimit'] = 'Limit storage of user notes (Mb)';
-$string['notestring'] = 'Simple configuration string';
-$string['label'] = 'Label';
-$string['labelname'] = 'Label name';
-$string['managelabels'] = 'Manage labels';
-$string['addlabel'] = 'Add a new label';
-$string['editlabel'] = 'Edit label';
-$string['savelabel'] = 'Save label';
+$string['copybuttontip'] = 'Copy screen content to Notes';
 $string['created'] = 'Created Date';
+$string['crop'] = 'Crop';
 $string['deletelabelconfirm'] = 'The label and the notes with this label will be deleted. Do you want to continue?';
 $string['deletenoteconfirm'] = 'The note will be deleted. Do you want to continue?';
-$string['notedeleted'] = 'The note is deleted';
+$string['editlabel'] = 'Edit label';
+$string['explorebuttontip'] = 'Explore Notes';
+$string['instructions'] = 'Use mouse cursor to adjust the cropping area';
+$string['label'] = 'Label';
 $string['labeldeleted'] = 'The label and its notes are deleted';
+$string['labelname'] = 'Label name';
+$string['managelabels'] = 'Manage labels';
+$string['modified'] = 'Modified Date';
+$string['notedeleted'] = 'The note is deleted';
+$string['notes'] = 'Notes';
+$string['notestring'] = 'Simple configuration string';
+$string['notes:addinstance'] = 'Add a new Notes block';
+$string['notes:myaddinstance'] = 'Add a new Notes block to the My Moodle page';
+$string['pluginname'] = 'Notes';
+$string['storagelimit'] = 'Limit storage of user notes (Mb)';
+$string['savelabel'] = 'Save label';
+$string['waitmessage'] = 'Please wait while data is being saved';
 

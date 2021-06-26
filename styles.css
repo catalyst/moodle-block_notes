@@ -178,7 +178,8 @@ a.note-button, a.note-button:visited, .note-button {
     left: 0px;
     padding: 0.5em;
     border: 1px solid #cccccc;
-    flex: 1;
+    flex-wrap: wrap;
+    display: flex;
 }
 
 .note-info-block div {

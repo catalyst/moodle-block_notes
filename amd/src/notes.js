@@ -1,23 +1,18 @@
 define(['jquery', 'core/ajax', 'core/templates', 'core/modal_factory', 'core/modal_events'],
-    function($, ajax, templates, ModalFactory, ModalEvents) {
+    function($, ajax, Templates, ModalFactory, ModalEvents) {
 
-        var saveDataToServer = function(ctxid, blockid, userid, imagedata, labelid, notedescription)
+        var saveDataToServer = function(ctxid, blockid, imagedata, labelid, newlabelname, notedescription)
         {
             let datestr = Date.now();
             var promises = ajax.call([{
                 methodname: 'block_notes_upload',
                 args: {
                     contextid: ctxid,
-                    component: 'user',
-                    filearea: 'draft', // TODO: set proper area
-                    itemid: blockid,
-                    filepath: '/',
                     filename: 'note-screen-' + Date.now() + '.png',
-                    userid: userid,
                     filecontent: imagedata,
-                    contextlevel: 'block',
                     instanceid: blockid,
                     labelid: labelid,
+                    newlabelname: newlabelname,
                     noteurl: window.location.href,
                     notedescription: notedescription
                 }
@@ -32,20 +27,46 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/modal_factory', 'core/mod
 
         };
 
-        var doModalDialog = function(ctxid, blockid, userid, courseid, imagedata) {
-            let labelid = 14;
-            let notedescription = 'Another Note';
-            ModalFactory.create({
-                type: ModalFactory.types.SAVE_CANCEL,
-                title: 'Save note',
-                body: 'Do you really want to save?',
-            })
-                .then(function (modal) {
-                    var root = modal.getRoot();
-                    root.on(ModalEvents.save, function () {
-                        saveDataToServer(ctxid, blockid, userid, imagedata, labelid, notedescription)
+        var doModalDialog = function(ctxid, blockid, courseid, imagedata) {
+            var promises = ajax.call([{
+                    methodname: 'block_notes_get_labels',
+                    args: {
+                        courseid: courseid
+                    }
+            }], true);
+
+            $.when.apply($, promises)
+                .done(function(data) {
+                    if (data.length > 0)
+                    {
+                        data[0].sel = true;
+                        var opts = {
+                            options: data,
+                            labels: true
+                        };
+                    }
+                    ModalFactory.create({
+                        type: ModalFactory.types.SAVE_CANCEL,
+                        title: 'Save note',
+                        body: Templates.render('block_notes/save_modal', opts),
+                    })
+                    .then(function (modal) {
+                        var root = modal.getRoot();
+                        root.on(ModalEvents.save, function () {
+                            notedescription = document.getElementById('block_notes-description').value;
+                            var labelid = 0;
+                            var newlabelname = $('input#block_notes-labelname').val();
+                            if (data.length > 0) {
+                                labelid = $('select#block_notes-label').val();
+                            }
+
+                            saveDataToServer(ctxid, blockid, imagedata, labelid, newlabelname, notedescription);
+                        });
+                        modal.show();
                     });
-                    modal.show();
+                })
+                .fail(function(data) {
+                    console.log(data);
                 });
         };
 
@@ -60,7 +81,7 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/modal_factory', 'core/mod
             document.getElementById('note_display_over_block').style.display = "block";
             document.getElementById('make_note_button').style.display = "none";
         },
-        makeScreenshot: function(crop_elem, ctxid, blockid, userid, courseid) {
+        makeScreenshot: function(crop_elem, ctxid, blockid, courseid) {
             const screenshotTarget = document.body;
             const element = document.querySelector(crop_elem);
             var rect = element.getBoundingClientRect();
@@ -80,7 +101,7 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/modal_factory', 'core/mod
                 }).then(function(canvas) {
                     let base64image = canvas.toDataURL("image/png");
                     document.getElementById('note_display_wait_block').style.display = "none";
-                    doModalDialog(ctxid, blockid, userid, courseid, base64image);
+                    doModalDialog(ctxid, blockid, courseid, base64image);
                 });
             });
             // Hide the wait block

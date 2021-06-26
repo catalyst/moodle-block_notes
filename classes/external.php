@@ -1,4 +1,27 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Script to let users manage their notes and labels.
+ *
+ * @package   block_notes
+ * @author    Kateryna Degtyariova katerynadegtyariova@catalyst-au.net
+ * @copyright 2021 Catalyst IT
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 namespace block_notes;
 
@@ -28,7 +51,7 @@ class external extends \external_api {
      * @return \external_function_parameters
      */
     public static function create_label_returns() {
-        return new \external_function_parameters(
+        return new \external_single_structure(
             [
                 'id' => new \external_value(PARAM_INT, 'Label id'),
                 'userid' => new \external_value(PARAM_INT, 'id of the user creating a label'),
@@ -40,13 +63,13 @@ class external extends \external_api {
 
     /**
      * @param $userid id of the user creating a label
-     * @param $courseid id of the user creating a label
+     * @param $courseid course id
      * @param $name name of the label
      * @return \stdClass
      * @throws \dml_exception
      * @throws \invalid_parameter_exception
      */
-    public static function create_label($userid, id $courseid, $name) {
+    public static function create_label($userid, $courseid, $name) {
         self::validate_parameters(self::create_label_parameters(), [
             'userid' => $userid,
             'courseid' => $courseid,
@@ -66,6 +89,61 @@ class external extends \external_api {
         $label->id = $DB->insert_record('block_note_labels', $label);
         return $label;
     }
+
+    /**
+     * get_labels function will get the list of labels created by a user for a course
+     * @return \external_function_parameters
+     */
+    public static function get_labels_parameters() {
+        return new \external_function_parameters(
+            [
+                'courseid' => new \external_value(PARAM_INT, 'id of the course where labels are created')
+            ]
+        );
+    }
+
+    /**
+     * Returns the list of labels
+     * @return \external_function_parameters
+     */
+    public static function get_labels_returns() {
+        return new \external_multiple_structure(
+            new  \external_single_structure(
+                [
+                    'id' => new \external_value(PARAM_INT, 'Label id'),
+                    'userid' => new \external_value(PARAM_INT, 'id of the user creating a label'),
+                    'courseid' => new \external_value(PARAM_INT, 'id of the course where a label is created'),
+                    'name' => new \external_value(PARAM_TEXT, 'The name of the label to be created')
+                ]
+            )
+        );
+    }
+
+    /**
+     * @param $userid id of the user
+     * @param $courseid id of the user creating a label
+     * @return \stdClass
+     * @throws \dml_exception
+     * @throws \invalid_parameter_exception
+     */
+    public static function get_labels($courseid) {
+        self::validate_parameters(self::get_labels_parameters(), [
+            'courseid' => $courseid
+        ]);
+        global $DB, $USER;
+        $labels = array();
+        $records = $DB->get_records('block_note_labels', ['userid' => $USER->id, 'courseid' => $courseid],'timemodified DESC', 'id,userid,courseid,name');
+        foreach ($records as $rec) {
+            $label = [
+                'id' => $rec->id,
+                'userid' => $rec->userid,
+                'courseid' => $rec->courseid,
+                'name' => $rec->name
+            ];
+            $labels[] = $label;
+        }
+        return $labels;
+    }
 }
 
 class upload extends \core_files_external {
@@ -79,18 +157,14 @@ class upload extends \core_files_external {
         return new \external_function_parameters(
             array(
                 'contextid' => new \external_value(PARAM_INT, 'context id', VALUE_DEFAULT, null),
-                'component' => new \external_value(PARAM_COMPONENT, 'component'),
-                'filearea'  => new \external_value(PARAM_AREA, 'file area'),
-                'itemid'    => new \external_value(PARAM_INT, 'associated id'),
-                'filepath'  => new \external_value(PARAM_PATH, 'file path'),
                 'filename'  => new \external_value(PARAM_FILE, 'file name'),
-                'userid'  => new \external_value(PARAM_INT, 'file name'),
                 'filecontent' => new \external_value(PARAM_TEXT, 'file content'),
-                'contextlevel' => new \external_value(PARAM_ALPHA, 'The context level to put the file in,
-                        (block, course, coursecat, system, user, module)', VALUE_DEFAULT, null),
-                'instanceid' => new \external_value(PARAM_INT, 'The Instance id of item associated
-                         with the context level', VALUE_DEFAULT, null),
-                'labelid' => new \external_value(PARAM_INT, 'The Label id associated with the note'),
+                'instanceid' => new \external_value(PARAM_INT,
+                    'The Instance id of item associated with the context level', VALUE_DEFAULT, null),
+                'labelid' => new \external_value(PARAM_INT,
+                    'The Label id associated with the note'),
+                'newlabelname' => new \external_value(PARAM_TEXT,
+                    'If a new label needs to be created this would specify the name'),
                 'noteurl'  => new \external_value(PARAM_LOCALURL, 'Note URL'),
                 'notedescription'  => new \external_value(PARAM_TEXT, 'Note Description'),
             )
@@ -101,51 +175,64 @@ class upload extends \core_files_external {
      * Uploading a note.
      *
      * @param int $contextid context id
-     * @param string $component component
-     * @param string $filearea file area
-     * @param int $itemid item id
-     * @param string $filepath file path
      * @param string $filename file name
-     * @param int $userid user id
      * @param string $filecontent file content
-     * @param string $contextlevel Context level (block, course, coursecat, system, user or module)
      * @param int $instanceid Instance id of the item associated with the context level
      * @param int $labelid Label id assiciated with the note
+     * @param string $newlabelname If a new label needs to be created this would specify the name
      * @param string $noteurl Local URL of a note
      * @param string $notedescription Text description of a note
      * @return array
      * @throws \moodle_exception
      */
-    public static function upload($contextid, $component, $filearea, $itemid, $filepath, $filename, $userid,
-                                  $filecontent, $contextlevel, $instanceid, $labelid, $noteurl, $notedescription) {
-        global $DB, $USER;
+    public static function upload($contextid, $filename, $filecontent, $instanceid, $labelid, $newlabelname, $noteurl, $notedescription) {
+        global $DB, $USER, $COURSE;
+        $component = 'block_notes';
+        $filearea = 'note';
+        $itemid = 0;
+        $contextlevel = 'block';
+        $filepath = '/';
 
         $fileinfo = self::validate_parameters(self::upload_parameters(), array(
-            'contextid' => $contextid, 'component' => $component, 'filearea' => $filearea, 'itemid' => $itemid,
-            'filepath' => $filepath, 'filename' => $filename, 'userid' => $userid, 'filecontent' => $filecontent,
-            'contextlevel' => $contextlevel, 'instanceid' => $instanceid, 'labelid' => $labelid,
+            'contextid' => $contextid, 'filename' => $filename, 'filecontent' => $filecontent,
+            'instanceid' => $instanceid, 'labelid' => $labelid, 'newlabelname' => $newlabelname,
             'noteurl' => $noteurl, 'notedescription' => $notedescription));
+
+        $fileinfo['component'] = $component;
+        $fileinfo['filearea'] = $filearea;
+        $fileinfo['itemid'] = $itemid;
+        $fileinfo['filepath'] = $filepath;
+        $fileinfo['contextlevel'] = $contextlevel;
 
         // Get and validate context.
         $context = self::get_context_from_params($fileinfo);
         self::validate_context($context);
+
+        if (strlen($newlabelname) > 0) {
+            $courseid = $COURSE->id;
+
+            $label = new \stdClass();
+            $label->userid = $USER->id;
+            $label->courseid = $courseid;
+            $label->name = $newlabelname;
+            $label->timecreated = time();
+            $label->timemodified = time();
+            $labelid = $DB->insert_record('block_note_labels', $label);
+        }
+
+        if (!$DB->get_record('block_note_labels', ['id' => $labelid, 'userid' => $USER->id])) {
+            throw new invalid_parameter_exception('Label does not exist');
+        }
 
         // Decode the content
         $filecontent = str_replace('data:image/png;base64,', '', $filecontent);
         $decoded = base64_decode($filecontent);
 
         $fs = get_file_storage();
+        // Need to add userid before the file is created
+        $fileinfo['userid'] = $USER->id;
         $fs->create_file_from_string($fileinfo, $decoded);
-
-        // Upload the file.
-        //$result = parent::upload($contextid, $component, $filearea, $itemid, $filepath, $filename, $decoded, $contextlevel, $instanceid);
-
         $file = $fs->get_file($contextid, $component, $filearea, $itemid, $filepath, $filename);
-
-        global $DB, $USER;
-        if (!$DB->get_record('block_note_labels', ['id' => $labelid])) {
-            throw new invalid_parameter_exception('Lable does not exist');
-        }
 
         $note = new \stdClass();
         $note->id = null;
@@ -164,7 +251,7 @@ class upload extends \core_files_external {
      * @return \external_function_parameters
      */
     public static function upload_returns() {
-        return new \external_function_parameters(
+        return new \external_single_structure(
             [
                 'id' => new \external_value(PARAM_INT, 'Note id'),
                 'fileid' => new \external_value(PARAM_INT, 'id of the screenshot file'),

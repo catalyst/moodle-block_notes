@@ -41,9 +41,11 @@ $extraparams = "&blockinstanceid=" . $blockinstanceid;
 $baseurl = new moodle_url('/blocks/notes/manage_notes.php', $urlparams);
 $PAGE->set_url($baseurl);
 
+// TODO: check the access and scurity of the operatoins
+
 // Process note deleting.
 if ($deletenoteid && confirm_sesskey()) {
-    $DB->delete_records('block_notes', array('id'=>$deletenoteid));
+    $DB->delete_records('block_notes', array('id' => $deletenoteid));
     // TODO: Delete files
     redirect($PAGE->url, get_string('notedeleted', 'block_notes'));
 }
@@ -51,7 +53,7 @@ if ($deletenoteid && confirm_sesskey()) {
 // Process label deleting
 if ($deletelabelid && confirm_sesskey()) {
     $DB->delete_records('block_notes', array('labelid'=>$deletelabelid));
-    $DB->delete_records('block_note_labels', array('id'=>$deletelabelid));
+    $DB->delete_records('block_note_labels', array('id'=>$deletelabelid, 'userid' => $USER->id));
     // TODO: Delete files
     redirect($PAGE->url, get_string('labeldeleted', 'block_notes'));
 }
@@ -85,7 +87,7 @@ $records = $DB->get_records_sql($sql, $params);
 $table = new flexible_table('labels-view');
 $table->define_columns(array('label', 'created', 'actions'));
 $table->define_headers(array(get_string('label', 'block_notes'),
-                             get_string('created', 'block_notes'),
+                             get_string('modified', 'block_notes'),
                              get_string('actions', 'moodle')));
 $table->define_baseurl($baseurl);
 $table->set_attribute('cellspacing', '0');
@@ -134,7 +136,14 @@ foreach ($sorted as $labelid => $record) {
             get_string('notes', 'block_notes'), '', false, true);
         foreach ($record['notes'] as $note) {
             $file = $fs->get_file_by_id($note['fileid']);
-            $url = moodle_url::make_draftfile_url($file->get_itemid(), $file->get_filepath(), $file->get_filename(), false);
+            $url = moodle_url::make_pluginfile_url(
+                    $file->get_contextid(),
+                    'block_notes',
+                    'note',
+                    $file->get_itemid(),
+                    $file->get_filepath(),
+                    $file->get_filename()
+            );
             $note['furl'] = $url;
 
             $editurl = new moodle_url('/blocks/notes/edit_notes.php?noteid='. $note['id'] );
@@ -151,7 +160,7 @@ foreach ($sorted as $labelid => $record) {
 
     $labelinfo = '<div class="title">' . $record['name'] . '</div>'. $regioncontent;
     // TODO: convert from UTC to user time
-    $labeldate = strftime(get_string('strftimerecentfull', 'langconfig'), $record['labeltimemodified']);
+    $labeldate = userdate($record['labeltimemodified'], get_string('strftimerecentfull', 'langconfig'));
     $editurl = new moodle_url('/blocks/notes/editlabel.php?labelid=' . $labelid . $extraparams);
     $editaction = $OUTPUT->action_icon($editurl, $editicon);
     $deleteurl = new moodle_url('/blocks/notes/manage_notes.php?deletelabelid='.
@@ -162,6 +171,11 @@ foreach ($sorted as $labelid => $record) {
     $table->add_data(array($labelinfo, $labeldate, $labelicons));
 }
 $table->finish_output();
+?>
+<div onclick="document.getElementById('note_display_note_block').style.display='none'" class="note-display-block-wait" data-html2canvas-ignore id="note_display_note_block">
+    <img id="noteimagepreview">
+</div>
+<?php
 echo $OUTPUT->footer();
 ?>
 <script>
