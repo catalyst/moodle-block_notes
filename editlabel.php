@@ -85,7 +85,7 @@ $PAGE->set_context($blockctx);
 
 if ($labelid) {
     $isadding = false;
-    $labelrecord = $DB->get_record('block_note_labels', array('id' => $labelid), '*', MUST_EXIST);
+    $labelrecord = \block_notes\label::get_from_db( $labelid);
 } else {
     $isadding = true;
     $labelrecord = new stdClass;

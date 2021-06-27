@@ -1,8 +1,4 @@
 <?php
-/*
- * TODO: Remove after debugging is done
- * TOKEN: I2WBd1nLLahzYkOCXtiKgv1MKKc1HRDk
- */
 
 $functions = [
     'block_notes_create_labels' => [

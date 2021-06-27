@@ -25,12 +25,11 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-$CFG->cachejs = false;
+//$CFG->cachejs = false;
 
 class block_notes extends block_base {
     public function init() {
         global $PAGE, $CFG;
-        //$PAGE->requires->js_call_amd('block_notes/notes', 'initNote');
         $this->title = get_string('pluginname', 'block_notes');
     }
 
@@ -54,7 +53,7 @@ class block_notes extends block_base {
     }
 
     public function hide_header() {
-        return true;
+        return false;
     }
 
     public function has_config() {
@@ -142,11 +141,18 @@ class block_notes extends block_base {
             return $this->content;
         }
 
-        $core_renderer = $this->page->get_renderer('core');
         $this->content = new stdClass;
-        $coursectx = $this->context->get_course_context();
+        try {
+            $coursectx = $this->context->get_course_context();
+        }
+        catch (\coding_exception $ex) {
+            return "The Notes block cannot be used outside the course.";
+        }
+
+
+        $core_renderer = $this->page->get_renderer('core');
         $contextdata = array(
-            'contextid' => $this->context->id, // TODO: fix $this->context->instanceid,
+            'contextid' => $this->context->id,
             'blockinstanceid' => $this->context->instanceid,
             'courseid' => $coursectx->instanceid,
             'userid' => $USER->id
@@ -155,4 +161,19 @@ class block_notes extends block_base {
 
         return $this->content;
     }
+
+    function instance_delete() {
+        global $DB;
+        try {
+            $coursectx = $this->context->get_course_context();
+            \block_notes\label::delete_course_labels($coursectx->instanceid);
+            $fs = get_file_storage();
+            $fs->delete_area_files($this->context->id, 'block_notes');
+        } catch(Exception $e) {
+            // TODO: processing exceptions
+        }
+
+        return true;
+    }
+
 }

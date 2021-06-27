@@ -220,9 +220,7 @@ class upload extends \core_files_external {
             $labelid = $DB->insert_record('block_note_labels', $label);
         }
 
-        if (!$DB->get_record('block_note_labels', ['id' => $labelid, 'userid' => $USER->id])) {
-            throw new invalid_parameter_exception('Label does not exist');
-        }
+        \block_notes\label::get_from_db($labelid);
 
         // Decode the content
         $filecontent = str_replace('data:image/png;base64,', '', $filecontent);

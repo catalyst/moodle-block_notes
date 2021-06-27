@@ -23,7 +23,6 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
 require('../../config.php');
 
 require_login();
@@ -41,20 +40,15 @@ $extraparams = "&blockinstanceid=" . $blockinstanceid;
 $baseurl = new moodle_url('/blocks/notes/manage_notes.php', $urlparams);
 $PAGE->set_url($baseurl);
 
-// TODO: check the access and scurity of the operatoins
-
 // Process note deleting.
 if ($deletenoteid && confirm_sesskey()) {
-    $DB->delete_records('block_notes', array('id' => $deletenoteid));
-    // TODO: Delete files
+    \block_notes\note::delete($deletenoteid);
     redirect($PAGE->url, get_string('notedeleted', 'block_notes'));
 }
 
 // Process label deleting
 if ($deletelabelid && confirm_sesskey()) {
-    $DB->delete_records('block_notes', array('labelid'=>$deletelabelid));
-    $DB->delete_records('block_note_labels', array('id'=>$deletelabelid, 'userid' => $USER->id));
-    // TODO: Delete files
+    \block_notes\label::delete($deletelabelid);
     redirect($PAGE->url, get_string('labeldeleted', 'block_notes'));
 }
 
@@ -159,7 +153,6 @@ foreach ($sorted as $labelid => $record) {
     }
 
     $labelinfo = '<div class="title">' . $record['name'] . '</div>'. $regioncontent;
-    // TODO: convert from UTC to user time
     $labeldate = userdate($record['labeltimemodified'], get_string('strftimerecentfull', 'langconfig'));
     $editurl = new moodle_url('/blocks/notes/editlabel.php?labelid=' . $labelid . $extraparams);
     $editaction = $OUTPUT->action_icon($editurl, $editicon);

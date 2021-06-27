@@ -1,3 +1,4 @@
+var mymodal = null;
 define(['jquery', 'core/ajax', 'core/templates', 'core/modal_factory', 'core/modal_events'],
     function($, ajax, Templates, ModalFactory, ModalEvents) {
 
@@ -22,6 +23,7 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/modal_factory', 'core/mod
                     alert('Note is saved');
                 })
                 .fail(function(data) {
+                    alert('Error saving the note: ' + data.message);
                     console.log(data);
                 });
 
@@ -45,27 +47,33 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/modal_factory', 'core/mod
                             labels: true
                         };
                     }
+                    if (mymodal != null)
+                        mymodal.destroy();
+
                     ModalFactory.create({
                         type: ModalFactory.types.SAVE_CANCEL,
                         title: 'Save note',
                         body: Templates.render('block_notes/save_modal', opts),
                     })
                     .then(function (modal) {
+                        mymodal = modal; // TODO: remove this ugly temporary solution, do it nice
                         var root = modal.getRoot();
                         root.on(ModalEvents.save, function () {
-                            notedescription = document.getElementById('block_notes-description').value;
+                            var notedescription = '';
+                            notedescription = $('#block_notes-description').val();
                             var labelid = 0;
                             var newlabelname = $('input#block_notes-labelname').val();
                             if (data.length > 0) {
                                 labelid = $('select#block_notes-label').val();
                             }
-
                             saveDataToServer(ctxid, blockid, imagedata, labelid, newlabelname, notedescription);
+                            modal.hide();
                         });
                         modal.show();
                     });
                 })
                 .fail(function(data) {
+                    alert('Error saving the note: ' + data.message);
                     console.log(data);
                 });
         };
@@ -74,21 +82,19 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/modal_factory', 'core/mod
         initNote: function() {
         },
         cancel: function() {
-            document.getElementById('note_display_over_block').style.display = "none";
-            document.getElementById('make_note_button').style.display = "block";
+            $('#note_display_over_block').hide();
+            $('#make_note_button').show();
         },
         showCropTool: function() {
-            document.getElementById('note_display_over_block').style.display = "block";
-            document.getElementById('make_note_button').style.display = "none";
+            $('#note_display_over_block').show();
+            $('#make_note_button').hide();
         },
         makeScreenshot: function(crop_elem, ctxid, blockid, courseid) {
             const screenshotTarget = document.body;
             const element = document.querySelector(crop_elem);
             var rect = element.getBoundingClientRect();
-            var blockobject = document.getElementById('note_display_over_block');
-            blockobject.style.display = "none";
-            // Show the wait block
-            document.getElementById('note_display_wait_block').style.display = "block";
+            $('#note_display_over_block').hide();
+            $('#note_display_wait_block').show();
             require(['block_notes/html2canvas'], function(h2c) {
                 let xx = rect.left + window.scrollX;
                 let yy = rect.top + 2 *window.scrollY;
@@ -100,12 +106,11 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/modal_factory', 'core/mod
                     height : rect.height,
                 }).then(function(canvas) {
                     let base64image = canvas.toDataURL("image/png");
-                    document.getElementById('note_display_wait_block').style.display = "none";
+                    $('#note_display_wait_block').hide();
                     doModalDialog(ctxid, blockid, courseid, base64image);
                 });
             });
-            // Hide the wait block
-            document.getElementById('make_note_button').style.display = "block";
+            $('#make_note_button').show();
         },
         activateCropTool: function(crop_elem) {
             const element = document.querySelector(crop_elem);

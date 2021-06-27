@@ -1,163 +1,64 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Script to let users manage their notes and labels.
+ *
+ * @package   block_notes
+ * @author    Kateryna Degtyariova katerynadegtyariova@catalyst-au.net
+ * @copyright 2021 Catalyst IT
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 namespace block_notes;
-class label implements \renderable, \templatable {
-    /**
-     * The unique label id
-     *
-     * @var string
-     */
-    protected $id;
-
-    /**
-     * The user id
-     *
-     * @var string
-     */
-    protected $userid;
-
-    /**
-     * The course id
-     *
-     * @var string
-     */
-    protected $courseid;
-
-    /**
-     * The text name of the label
-     *
-     * @var string
-     */
-    protected $name;
-
-    /**
-     * The publish date of the item in Unix timestamp format
-     *
-     * @var int
-     */
-    protected $timemodified;
-
-    /**
-     * label_item constructor.
-     * @param $id
-     * @param $userid
-     * @param $courseid
-     * @param $name
-     * @param $timemodified
-     */
-    public function __construct($id, $userid, $courseid, $name, $timemodified){
-        $this->id = $id;
-        $this->userid = $userid;
-        $this->courseid = $courseid;
-        $this->name = $name;
-        $this->timemodified = $timemodified;
-    }
-
-    /**
-     * Export context for use in mustache templates
-     *
-     * @see templatable::export_for_template()
-     * @param renderer_base $output
-     * @return array
-     */
-    public function export_for_template(\renderer_base $output) {
-        $data = array(
-            'id'            => $this->id,
-            'name'          => $this->name,
-            'datepublished' => $output->format_published_date($this->timemodified)
-        );
-
-        return $data;
-    }
-
-    /**
-     * @return string
-     */
-    public function get_id(): string
+class label
+{
+    static function get_from_db($labelid)
     {
-        return $this->id;
+        global $DB, $USER;
+        $label = $DB->get_record('block_note_labels', array('id' => $labelid, 'userid' => $USER->id));
+        if (!$label) {
+            throw new \invalid_parameter_exception(get_string('labelnotfound', 'block_notes'));
+        }
+        return $label;
     }
 
-    /**
-     * @param string $id
-     * @return label_item
-     */
-    public function set_id(string $id): label_item
+    static function delete($labelid)
     {
-        $this->id = $id;
-        return $this;
+        global $DB, $USER;
+        $label = self::get_from_db($labelid);
+        $notes = \block_notes\note::get_by_labelid($label->id, false);
+        $transaction = $DB->start_delegated_transaction();
+        try {
+            if ($notes) {
+                foreach ($notes as $note) {
+                    \block_notes\note::delete($note->id, false);
+                }
+            }
+            $DB->delete_records('block_note_labels', ['id' => $label->id, 'userid' => $USER->id]);
+            $transaction->allow_commit();
+        } catch (\Exception $e) {
+            $transaction->rollback($e);
+        }
     }
 
-    /**
-     * @return string
-     */
-    public function get_userid(): string
+    static function delete_course_labels($courseid)
     {
-        return $this->userid;
+        global $DB;
+        $DB->delete_records_select('block_notes', ' labelid IN (SELECT id FROM {block_note_labels} WHERE courseid = :courseid)', ['courseid' => $courseid]);
+        $DB->delete_records('block_note_labels', ['courseid' => $courseid]);
     }
-
-    /**
-     * @param string $userid
-     * @return label_item
-     */
-    public function set_userid(string $userid): label_item
-    {
-        $this->userid = $userid;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function get_courseid(): string
-    {
-        return $this->courseid;
-    }
-
-    /**
-     * @param string $courseid
-     * @return label_item
-     */
-    public function set_courseid(string $courseid): label_item
-    {
-        $this->courseid = $courseid;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function get_name(): string
-    {
-        return $this->name;
-    }
-
-    /**
-     * @param string $name
-     * @return label_item
-     */
-    public function set_name(string $name): label_item
-    {
-        $this->name = $name;
-        return $this;
-    }
-
-    /**
-     * @return int
-     */
-    public function get_timemodified(): int
-    {
-        return $this->timemodified;
-    }
-
-    /**
-     * @param int $timemodified
-     * @return label_item
-     */
-    public function set_timemodified(int $timemodified): label_item
-    {
-        $this->timemodified = $timemodified;
-        return $this;
-    }
-
-
 }
