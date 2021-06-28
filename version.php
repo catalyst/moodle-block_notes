@@ -26,5 +26,5 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'block_notes';
-$plugin->version = 2021062600;  // YYYYMMDDHH (year, month, day, 24-hr time)
+$plugin->version = 2021062800;  // YYYYMMDDHH (year, month, day, 24-hr time)
 $plugin->requires = 2017110800; // YYYYMMDDHH (This is the release version for Moodle 2.0)

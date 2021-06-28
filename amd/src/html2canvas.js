@@ -6480,7 +6480,7 @@
                 var _i, _a, child, _b, _c, child, _d, _e, child, _f, _g, child, _h, _j, child, _k, _l, child, _m, _o, child;
                 return __generator(this, function (_p) {
                     switch (_p.label) {
-                        case 0: 
+                        case 0:
                         // https://www.w3.org/TR/css-position-3/#painting-order
                         // 1. the background and borders of the element forming the stacking context.
                         return [4 /*yield*/, this.renderNodeBackgroundAndBorders(stack.element)];
@@ -6500,7 +6500,7 @@
                         case 4:
                             _i++;
                             return [3 /*break*/, 2];
-                        case 5: 
+                        case 5:
                         // 3. For all its in-flow, non-positioned, block-level descendants in tree order:
                         return [4 /*yield*/, this.renderNodeContent(stack.element)];
                         case 6:

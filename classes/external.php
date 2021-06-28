@@ -146,7 +146,7 @@ class external extends \external_api {
     }
 }
 
-class upload extends \core_files_external {
+class upload extends \external_api {
 
     /**
      * Returns description of note upload parameters

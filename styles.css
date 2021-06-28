@@ -186,12 +186,27 @@ a.note-button, a.note-button:visited, .note-button {
     flex: 1;
 }
 
-#noteimagepreview
-{
+#noteimagepreview {
     border: 1px solid #cccccc;
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     cursor: pointer;
+}
+
+p.fix-ds-lead {
+    position: relative;
+    font-size: 1.4rem;
+    margin-bottom: 2rem;
+}
+
+p.fix-ds-lead::before {
+    content: '';
+    display: block;
+    width: 32px;
+    height: 32px;
+    background-image: url('/theme/latrobe/icons/latrobe-chevron-RGB.svg');
+    background-repeat: no-repeat;
+    margin-bottom: 0.5rem;
 }

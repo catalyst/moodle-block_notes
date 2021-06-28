@@ -86,6 +86,15 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/modal_factory', 'core/mod
             $('#make_note_button').show();
         },
         showCropTool: function() {
+            // TODO: fix this dirty trick
+            let dsleads = document.getElementsByClassName('ds-lead');
+            if (dsleads != null)
+            {
+                for (var i = 0; i < dsleads.length; i++) {
+                    dsleads[i].className = 'fix-ds-lead';
+                }
+            }
+
             $('#note_display_over_block').show();
             $('#make_note_button').hide();
         },
@@ -93,21 +102,30 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/modal_factory', 'core/mod
             const screenshotTarget = document.body;
             const element = document.querySelector(crop_elem);
             var rect = element.getBoundingClientRect();
+
             $('#note_display_over_block').hide();
             $('#note_display_wait_block').show();
             require(['block_notes/html2canvas'], function(h2c) {
                 let xx = rect.left + window.scrollX;
-                let yy = rect.top + 2 *window.scrollY;
+                let yy = rect.top + window.scrollY * 2;
+
+                let scx = window.scrollX;
+                let scy = window.scrollY;
                 h2c(document.body, {
                     scale: 1,
                     x: xx,
                     y: yy,
+                    scrollX: scx,
+                    scrollY: scy,
                     width : rect.width,
                     height : rect.height,
                 }).then(function(canvas) {
                     let base64image = canvas.toDataURL("image/png");
-                    $('#note_display_wait_block').hide();
                     doModalDialog(ctxid, blockid, courseid, base64image);
+                    $('#note_display_wait_block').hide();
+                }).catch(function(error) {
+                    $('#note_display_wait_block').hide();
+                    alert('Unable to take a screenshot\n\n' + error.message);
                 });
             });
             $('#make_note_button').show();
