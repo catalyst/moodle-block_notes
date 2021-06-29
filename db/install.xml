@@ -1,45 +1,45 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <XMLDB PATH="blocks/notes/db" VERSION="2021061800" COMMENT="XMLDB file for Moodle notes block"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
-    <TABLES>
-        <TABLE NAME="block_note_labels" COMMENT="Labels for notes created by Moodle users.">
-            <FIELDS>
-                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-                <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The user account this note is linked to."/>
-                <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The course to which the label belongs."/>
-                <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="The text label for the set of notes"/>
-                <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-                <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-            </FIELDS>
-            <KEYS>
-                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-                <KEY NAME="userid_key" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
-                <KEY NAME="uniq_key" TYPE="unique" FIELDS="userid, courseid, name"/>
-            </KEYS>
-            <INDEXES>
-                <INDEX NAME="search_index" UNIQUE="false" FIELDS="userid, name"/>
-            </INDEXES>
-        </TABLE>
-        <TABLE NAME="block_notes" COMMENT="Notes created by Moodle users.">
-            <FIELDS>
-                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-                <FIELD NAME="fileid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The file user uploaded with the note"/>
-                <FIELD NAME="labelid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The label user assigned for the note"/>
-                <FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="The text information user supplied with the note"/>
-                <FIELD NAME="url" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="URL to a page where the note was taken from"/>
-                <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-                <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
-            </FIELDS>
-            <KEYS>
-                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-                <KEY NAME="fileid_key" TYPE="foreign" FIELDS="fileid" REFTABLE="files" REFFIELDS="id"/>
-                <KEY NAME="labelid_key" TYPE="foreign" FIELDS="labelid" REFTABLE="block_note_labels" REFFIELDS="id"/>
-            </KEYS>
-            <INDEXES>
-                <INDEX NAME="search_index" UNIQUE="false" FIELDS="description" HINTS="full_text_search"/>
-            </INDEXES>
-        </TABLE>
-    </TABLES>
+  <TABLES>
+    <TABLE NAME="block_note_labels" COMMENT="Labels for notes created by Moodle users.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The user account this note is linked to."/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The course to which the label belongs."/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="The text label for the set of notes"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="userid_key" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+        <KEY NAME="uniq_key" TYPE="unique" FIELDS="userid, courseid, name"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="search_index" UNIQUE="false" FIELDS="userid, name"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="block_notes" COMMENT="Notes created by Moodle users.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="fileid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The file user uploaded with the note"/>
+        <FIELD NAME="labelid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The label user assigned for the note"/>
+        <FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="The text information user supplied with the note"/>
+        <FIELD NAME="url" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="URL to a page where the note was taken from"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="fileid_key" TYPE="foreign" FIELDS="fileid" REFTABLE="files" REFFIELDS="id"/>
+        <KEY NAME="labelid_key" TYPE="foreign" FIELDS="labelid" REFTABLE="block_note_labels" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="search_index" UNIQUE="false" FIELDS="description" HINTS="full_text_search"/>
+      </INDEXES>
+    </TABLE>
+  </TABLES>
 </XMLDB>

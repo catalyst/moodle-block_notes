@@ -106,8 +106,12 @@ define(['jquery', 'core/ajax', 'core/templates', 'core/modal_factory', 'core/mod
             $('#note_display_over_block').hide();
             $('#note_display_wait_block').show();
             require(['block_notes/html2canvas'], function(h2c) {
+                let mult = 2;
+                if( /Android|webOS|iPhone|iPad|Mac|Macintosh|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+                    mult = 1;
+                }
                 let xx = rect.left + window.scrollX;
-                let yy = rect.top + window.scrollY * 2;
+                let yy = rect.top + window.scrollY * mult;
 
                 let scx = window.scrollX;
                 let scy = window.scrollY;
