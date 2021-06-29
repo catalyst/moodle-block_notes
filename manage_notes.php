@@ -25,20 +25,25 @@
 
 require('../../config.php');
 
-require_login();
-
-$extraparams = '';
-$urlparams = array();
-
-$blockinstanceid = required_param('blockinstanceid', PARAM_INT);
+$blockinstanceid = optional_param('blockinstanceid', 0, PARAM_INT);
 $deletenoteid = optional_param('deletenoteid', 0, PARAM_INT);
 $deletelabelid = optional_param('deletelabelid', 0, PARAM_INT);
 
-$urlparams['blockinstanceid'] = $blockinstanceid;
-$extraparams = "&blockinstanceid=" . $blockinstanceid;
+$urlparams = array();
+$extraparams = '';
+
+if ($blockinstanceid) {
+    $urlparams['blockinstanceid'] = $blockinstanceid;
+    $extraparams = "&blockinstanceid=" . $blockinstanceid;
+}
 
 $baseurl = new moodle_url('/blocks/notes/manage_notes.php', $urlparams);
 $PAGE->set_url($baseurl);
+require_login();
+if (isguestuser() || !isloggedin())
+{
+    throw new moodle_exception('noguestallowed', 'block_notes');
+}
 
 // Process note deleting.
 if ($deletenoteid && confirm_sesskey()) {
@@ -52,28 +57,31 @@ if ($deletelabelid && confirm_sesskey()) {
     redirect($PAGE->url, get_string('labeldeleted', 'block_notes'));
 }
 
-$blockctx = context_block::instance($blockinstanceid);
-$coursectx = $blockctx->get_course_context();
-$PAGE->set_context($blockctx);
+// If block instance is known we can set a context, otherwise - no context
+if ($blockinstanceid) {
+    $blockctx = context_block::instance($blockinstanceid);
+    $coursectx = $blockctx->get_course_context();
+    $PAGE->set_context($blockctx);
+}
 
-$s = get_string('notestring', 'block_notes');
+$s = get_string('explorebuttontip', 'block_notes');
 $PAGE->set_title($s);
 $PAGE->set_heading('Notes Heading');
 echo $OUTPUT->header();
 $newlabelurl = new moodle_url('/blocks/notes/editlabel.php?'. $extraparams);
-echo '<div><a href="' . $newlabelurl . '">' . get_string('addlabel', 'block_notes') . '</a></div>';
-
-$params = ['userid' => $USER->id, 'courseid' => $coursectx->instanceid];
+if ($blockinstanceid > 0) {
+    echo '<div><a href="' . $newlabelurl . '">' . get_string('addlabel', 'block_notes') . '</a></div>';
+}
 
 $sql = "SELECT CONCAT(n.id, '_', lb.id) AS uniquestr, n.id, n.description, n.url, n.fileid, lb.id AS labelid, lb.name, lb.timemodified AS labeltimemodified,
         n.timemodified AS ntimemodified
         FROM {block_note_labels} lb
         LEFT JOIN {block_notes} n ON n.labelid = lb.id
-        WHERE userid = :userid AND courseid = :courseid
+        WHERE userid = :userid
         ORDER BY labeltimemodified DESC, ntimemodified DESC
 ";
 
-$records = $DB->get_records_sql($sql, $params);
+$records = $DB->get_records_sql($sql, ['userid' => $USER->id]);
 
 /*
  * Set up the flexible table to display all labels
@@ -140,8 +148,9 @@ foreach ($sorted as $labelid => $record) {
             );
             $note['furl'] = $url;
 
+/*          TODO: add editing for notes
             $editurl = new moodle_url('/blocks/notes/edit_notes.php?noteid='. $note['id'] );
-            $note['editaction'] = $OUTPUT->action_icon($editurl, $editicon);
+            $note['editaction'] = $OUTPUT->action_icon($editurl, $editicon);*/
 
             $deleteurl = new moodle_url('/blocks/notes/manage_notes.php?deletenoteid='. $note['id'] . '&sesskey=' . sesskey() . $extraparams);
             $note['deleteaction'] = $OUTPUT->action_icon($deleteurl, $deleteicon,

@@ -132,7 +132,7 @@ class external extends \external_api {
         ]);
         global $DB, $USER;
         $labels = array();
-        $records = $DB->get_records('block_note_labels', ['userid' => $USER->id, 'courseid' => $courseid],'timemodified DESC', 'id,userid,courseid,name');
+        $records = $DB->get_records('block_note_labels', ['userid' => $USER->id],'timemodified DESC', 'id,userid,courseid,name');
         foreach ($records as $rec) {
             $label = [
                 'id' => $rec->id,

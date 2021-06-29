@@ -59,13 +59,15 @@ class label_form extends moodleform {
 
 $extraparams = '';
 
-$blockinstanceid = required_param('blockinstanceid', PARAM_INT);
+$blockinstanceid = optional_param('blockinstanceid', 0, PARAM_INT);
 $returnurl = optional_param('returnurl', '', PARAM_LOCALURL);
 $labelid = optional_param('labelid', 0, PARAM_INT); // 0 mean create new.
 
 $urlparams = array('labelid' => $labelid);
-$urlparams['blockinstanceid'] = $blockinstanceid;
-$extraparams = "&blockinstanceid=" . $blockinstanceid;
+if ($blockinstanceid) {
+    $urlparams['blockinstanceid'] = $blockinstanceid;
+    $extraparams = "&blockinstanceid=" . $blockinstanceid;
+}
 
 if ($returnurl) {
     $urlparams['returnurl'] = $returnurl;
@@ -79,9 +81,22 @@ $managenotes = new moodle_url('/blocks/notes/manage_notes.php', $urlparams);
 
 $baseurl = new moodle_url('/blocks/notes/editlabel.php', $urlparams);
 $PAGE->set_url($baseurl);
-$blockctx = context_block::instance($blockinstanceid);
-$coursectx = $blockctx->get_course_context();
-$PAGE->set_context($blockctx);
+
+if ($labelid == 0 && $blockinstanceid == 0) {
+    redirect($managenotes, get_string('labelcontext', 'block_notes'));
+}
+
+require_login();
+if (isguestuser() || !isloggedin())
+{
+    throw new moodle_exception('noguestallowed', 'block_notes');
+}
+
+if ($blockinstanceid) {
+    $blockctx = context_block::instance($blockinstanceid);
+    $coursectx = $blockctx->get_course_context();
+    $PAGE->set_context($blockctx);
+}
 
 if ($labelid) {
     $isadding = false;

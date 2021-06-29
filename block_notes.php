@@ -137,6 +137,10 @@ class block_notes extends block_base {
 
     public function get_content() {
         global $USER, $PAGE;
+        if (!isloggedin() || isguestuser()) {
+            return null;
+        }
+
         if ($this->content !== null) {
             return $this->content;
         }
@@ -165,10 +169,11 @@ class block_notes extends block_base {
     function instance_delete() {
         global $DB;
         try {
+            /* TODO: handle instance deleting. Now we are not deleting the course notes when instance is removed.
             $coursectx = $this->context->get_course_context();
             \block_notes\label::delete_course_labels($coursectx->instanceid);
             $fs = get_file_storage();
-            $fs->delete_area_files($this->context->id, 'block_notes');
+            $fs->delete_area_files($this->context->id, 'block_notes');*/
         } catch(Exception $e) {
             // TODO: processing exceptions
         }
